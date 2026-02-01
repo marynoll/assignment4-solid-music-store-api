@@ -103,9 +103,14 @@ public class ProductController {
     public void demoSorting() {
         try {
             List<Vinyl> vinyls = vinylService.getAll();
-            SortingUtils.sortByPrice(vinyls, Vinyl::getPrice);
+            System.out.println("Vinyl count: " + vinyls.size()); // <- check this
             vinyls.forEach(v -> System.out.println(v.getName() + " $" + v.getPrice()));
-        } catch (DatabaseOperationException e) { System.err.println(e.getMessage()); }
+            SortingUtils.sortByPrice(vinyls, Vinyl::getPrice);
+            System.out.println("After sorting:");
+            vinyls.forEach(v -> System.out.println(v.getName() + " $" + v.getPrice()));
+        } catch (DatabaseOperationException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public void demoReflection() {

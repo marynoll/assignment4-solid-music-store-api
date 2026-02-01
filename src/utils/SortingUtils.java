@@ -18,10 +18,9 @@ public class SortingUtils {
         }
     }
 
-    public static <T> void sortByPrice(List<T> items, Function<T, Double> priceExtractor, boolean ascending) {
-        sortByField(items, priceExtractor, ascending);
+    public static <T> void sortByPrice(List<T> items, Function<T, Double> priceExtractor) {
+        sortByField(items, priceExtractor, true);  // true = ascending
     }
-
     public static <T> List<T> filter(List<T> items, Predicate<T> predicate) {
         return items.stream().filter(predicate).collect(Collectors.toList());
     }

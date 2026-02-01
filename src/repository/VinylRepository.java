@@ -14,22 +14,21 @@ public class VinylRepository {
     private CategoryRepository categoryRepository = new CategoryRepository();
 
     public void create(Vinyl vinyl) throws DatabaseOperationException {
-        String sql = "INSERT INTO vinyls (name, price, stock_quantity, manufacturer, " +
-                "artist, genre, release_year, speed_rpm, category_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO vinyl (name, price, manufacturer, stock_quantity, " +
+                "artist, genre, release_year, speed_rpm, category_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, vinyl.getName());
             stmt.setDouble(2, vinyl.getPrice());
-            stmt.setInt(3, vinyl.getStockQuantity());
-            stmt.setString(4, vinyl.getManufacturer());
+            stmt.setString(3, vinyl.getManufacturer());
+            stmt.setInt(4, vinyl.getStockQuantity());
             stmt.setString(5, vinyl.getArtist());
             stmt.setString(6, vinyl.getGenre());
             stmt.setInt(7, vinyl.getReleaseYear());
             stmt.setInt(8, vinyl.getSpeedRPM());
-            stmt.setInt(9, vinyl.getCategory() != null ? vinyl.getCategory().getId() : 0);
+            stmt.setInt(9, vinyl.getCategory().getId());
 
             int rowsAffected = stmt.executeUpdate();
 
@@ -50,7 +49,7 @@ public class VinylRepository {
 
     public List<Vinyl> getAll() throws DatabaseOperationException {
         List<Vinyl> vinyls = new ArrayList<>();
-        String sql = "SELECT * FROM vinyls ORDER BY artist, name";
+        String sql = "SELECT * FROM vinyl ORDER BY artist, name";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -61,15 +60,15 @@ public class VinylRepository {
                 vinyls.add(vinyl);
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException | ResourceNotFoundException e) {
             throw new DatabaseOperationException("Failed to retrieve vinyls: " + e.getMessage(), e);
         }
 
         return vinyls;
     }
 
-    public Vinyl getByPrice() throws DatabaseOperationException, ResourceNotFoundException {
-        String sql = "SELECT * FROM vinyl WHERE price >= AVG(price)";
+    public Vinyl getById(int id) throws DatabaseOperationException, ResourceNotFoundException {
+        String sql = "SELECT * FROM vinyls WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -80,7 +79,7 @@ public class VinylRepository {
                 if (rs.next()) {
                     return mapResultSetToVinyl(rs);
                 } else {
-                    throw new ResourceNotFoundException("Vinyls " + id + " not found");
+                    throw new ResourceNotFoundException("Vinyl with ID " + id + " not found");
                 }
             }
 
@@ -90,8 +89,8 @@ public class VinylRepository {
     }
 
     public void update(int id, Vinyl vinyl) throws DatabaseOperationException, ResourceNotFoundException {
-        String sql = "UPDATE vinyls SET name = ?, price = ?, stock_quantity = ?, " +
-                "manufacturer = ?, artist = ?, genre = ?, release_year = ?, " +
+        String sql = "UPDATE vinyls SET name = ?, price = ?, manufacturer = ?, " +
+                "stock_quantity = ?, artist = ?, genre = ?, release_year = ?, " +
                 "speed_rpm = ?, category_id = ? WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -99,13 +98,13 @@ public class VinylRepository {
 
             stmt.setString(1, vinyl.getName());
             stmt.setDouble(2, vinyl.getPrice());
-            stmt.setInt(3, vinyl.getStockQuantity());
-            stmt.setString(4, vinyl.getManufacturer());
+            stmt.setString(3, vinyl.getManufacturer());
+            stmt.setInt(4, vinyl.getStockQuantity());
             stmt.setString(5, vinyl.getArtist());
             stmt.setString(6, vinyl.getGenre());
             stmt.setInt(7, vinyl.getReleaseYear());
             stmt.setInt(8, vinyl.getSpeedRPM());
-            stmt.setInt(9, vinyl.getCategory() != null ? vinyl.getCategory().getId() : 0);
+            stmt.setInt(9, vinyl.getCategory().getId());
             stmt.setInt(10, id);
 
             int rowsAffected = stmt.executeUpdate();
@@ -140,17 +139,8 @@ public class VinylRepository {
         }
     }
 
-    private Vinyl mapResultSetToVinyl(ResultSet rs) throws SQLException, DatabaseOperationException {
-        int categoryId = rs.getInt("category_id");
-        Category category = null;
-
-        try {
-            category = categoryRepository.getById(categoryId);
-        } catch (ResourceNotFoundException e) {
-            throw new DatabaseOperationException("Category not found for vinyl", e);
-        }
-
-        return new Vinyl(
+    private Vinyl mapResultSetToVinyl(ResultSet rs) throws SQLException, DatabaseOperationException, ResourceNotFoundException {
+        Vinyl vinyl = new Vinyl(
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getDouble("price"),
@@ -160,7 +150,18 @@ public class VinylRepository {
                 rs.getString("genre"),
                 rs.getInt("release_year"),
                 rs.getInt("speed_rpm"),
-                category
+                categoryRepository.getById(rs.getInt("category_id"))
         );
+
+        // Fetch category
+        int categoryId = rs.getInt("category_id");
+        try {
+            Category category = categoryRepository.getById(categoryId);
+            vinyl.setCategory(category);
+        } catch (ResourceNotFoundException e) {
+            throw new DatabaseOperationException("Category not found for vinyl", e);
+        }
+
+        return vinyl;
     }
 }

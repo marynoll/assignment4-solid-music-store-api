@@ -1,4 +1,4 @@
-package model;
+package model.interfaces;
 
 public interface Validation {
     boolean isValid(); // abstract method

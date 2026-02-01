@@ -102,4 +102,18 @@ public class Vinyl extends ProductItem {
                 && (speedRPM == 33 || speedRPM == 45 || speedRPM == 78)
                 && category != null;
     }
+
+    @Override
+    public String toString() {
+        return "Vinyl{" +
+                "id=" + getId() +
+                ", name='" + getName() + '\'' +
+                ", price=" + getPrice() +
+                ", artist='" + getArtist() + '\'' +
+                ", genre='" + getGenre() + '\'' +
+                ", year=" + getReleaseYear() +
+                ", rpm=" + getSpeedRPM() +
+                ", category=" + getCategory().getName() +
+                '}';
+    }
 }

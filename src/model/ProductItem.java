@@ -1,5 +1,8 @@
 package model;
 
+import model.interfaces.FinalPrice;
+import model.interfaces.Validation;
+
 public abstract class ProductItem implements Validation, FinalPrice {
     private int id;
     private String name;
@@ -29,7 +32,7 @@ public abstract class ProductItem implements Validation, FinalPrice {
     }
 
     public void setName(String name) {
-        if (name == null) {
+        if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
         this.name = name;
@@ -51,7 +54,7 @@ public abstract class ProductItem implements Validation, FinalPrice {
     }
 
     public void setManufacturer(String manufacturer) {
-        if (manufacturer == null) {
+        if (manufacturer == null || manufacturer.isBlank()) {
             throw new IllegalArgumentException("Manufacturer cannot be empty");
         }
         this.manufacturer = manufacturer;
@@ -84,7 +87,10 @@ public abstract class ProductItem implements Validation, FinalPrice {
 
     @Override
     public boolean isValid() {
-        return name != null && price > 0 && manufacturer != null && stockQuantity >= 0;
+        return name != null && !name.isBlank()
+                && price > 0 && manufacturer != null
+                && !manufacturer.isBlank()
+                && stockQuantity >= 0;
     }
 
     @Override

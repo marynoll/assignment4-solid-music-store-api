@@ -12,7 +12,7 @@ import java.util.List;
 public class CategoryRepository {
 
     public void create(Category category) throws DatabaseOperationException {
-        String sql = "INSERT INTO categories (name, description) VALUES (?, ?)";
+        String sql = "INSERT INTO category (name, description) VALUES (?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -38,15 +38,15 @@ public class CategoryRepository {
     }
 
     public List<Category> getAll() throws DatabaseOperationException {
-        List<Category> categories = new ArrayList<>();
-        String sql = "SELECT * FROM categories ORDER BY name";
+        List<Category> categories = new ArrayList<>();  // list of categories
+        String sql = "SELECT * FROM category ORDER BY name";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Category category = mapResultSetToCategory(rs);
+                Category category = mapResultSetToCategory(rs);  // single category from row
                 categories.add(category);
             }
 
@@ -58,7 +58,7 @@ public class CategoryRepository {
     }
 
     public Category getById(int id) throws DatabaseOperationException, ResourceNotFoundException {
-        String sql = "SELECT * FROM categories WHERE id = ?";
+        String sql = "SELECT * FROM category WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -79,7 +79,7 @@ public class CategoryRepository {
     }
 
     public void update(int id, Category category) throws DatabaseOperationException, ResourceNotFoundException {
-        String sql = "UPDATE categories SET name = ?, description = ? WHERE id = ?";
+        String sql = "UPDATE category SET name = ?, description = ? WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -102,7 +102,7 @@ public class CategoryRepository {
     }
 
     public void delete(int id) throws DatabaseOperationException, ResourceNotFoundException {
-        String sql = "DELETE FROM categories WHERE id = ?";
+        String sql = "DELETE FROM category WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -121,7 +121,7 @@ public class CategoryRepository {
     }
 
     public boolean existsByName(String name) throws DatabaseOperationException {
-        String sql = "SELECT COUNT(*) FROM categories WHERE name = ?";
+        String sql = "SELECT COUNT(*) FROM category WHERE name = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

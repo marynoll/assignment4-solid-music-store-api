@@ -1,5 +1,7 @@
 package model;
 
+import model.interfaces.Validation;
+
 public class Category implements Validation {
     private int id;
     private String name;
